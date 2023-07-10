@@ -1,11 +1,11 @@
 package kakkoiichris.ptable
 
-import innovolt.json.JsonMember
 import kakkoiichris.hypergame.input.Input
 import kakkoiichris.hypergame.media.Renderable
 import kakkoiichris.hypergame.media.Renderer
 import kakkoiichris.hypergame.state.StateManager
 import kakkoiichris.hypergame.util.Time
+import kakkoiichris.hypergame.util.data.json.JSONMember
 import kakkoiichris.hypergame.util.math.Box
 import kakkoiichris.hypergame.util.math.Vector
 import kakkoiichris.hypergame.view.View
@@ -14,76 +14,76 @@ import java.awt.Color
 import java.awt.Font
 
 class Element(
-    @JsonMember("name")
+    @JSONMember("name")
     val name: String?,
 
-    @JsonMember("appearance")
+    @JSONMember("appearance")
     val appearance: String?,
 
-    @JsonMember("atomic_mass")
+    @JSONMember("atomic_mass")
     val atomicMass: Double?,
 
-    @JsonMember("boil")
+    @JSONMember("boil")
     val boil: Double?,
 
-    @JsonMember("category")
+    @JSONMember("category")
     val category: String?,
 
-    @JsonMember("density")
+    @JSONMember("density")
     val density: Double?,
 
-    @JsonMember("discovered_by")
+    @JSONMember("discovered_by")
     val discoveredBy: String?,
 
-    @JsonMember("melt")
+    @JSONMember("melt")
     val melt: Double?,
 
-    @JsonMember("molar_heat")
+    @JSONMember("molar_heat")
     val molarHeat: Double?,
 
-    @JsonMember("named_by")
+    @JSONMember("named_by")
     val namedBy: String?,
 
-    @JsonMember("number")
+    @JSONMember("number")
     val number: Int?,
 
-    @JsonMember("period")
+    @JSONMember("period")
     val period: Int?,
 
-    @JsonMember("phase")
+    @JSONMember("phase")
     val phase: String?,
 
-    @JsonMember("source")
+    @JSONMember("source")
     val source: String?,
 
-    @JsonMember("spectral_img")
+    @JSONMember("spectral_img")
     val spectralImage: String?,
 
-    @JsonMember("summary")
+    @JSONMember("summary")
     val summary: String?,
 
-    @JsonMember("symbol")
+    @JSONMember("symbol")
     val symbol: String?,
 
-    @JsonMember("xpos")
+    @JSONMember("xpos")
     val xPos: Int?,
 
-    @JsonMember("ypos")
+    @JSONMember("ypos")
     val yPos: Int?,
 
-    @JsonMember("shells")
+    @JSONMember("shells")
     val shells: IntArray?,
 
-    @JsonMember("electron_configuration")
+    @JSONMember("electron_configuration")
     val electronConfiguration: String?,
 
-    @JsonMember("electron_affinity")
+    @JSONMember("electron_affinity")
     val electronAffinity: Double?,
 
-    @JsonMember("electronegativity_pauling")
+    @JSONMember("electronegativity_pauling")
     val electronegativityPauling: Double?,
 
-    @JsonMember("ionization_energies")
+    @JSONMember("ionization_energies")
     val ionizationEnergies: DoubleArray?,
 ) : Box(
     (DISPLAY_WIDTH - ELEMENT_SIZE) / 2.0,
