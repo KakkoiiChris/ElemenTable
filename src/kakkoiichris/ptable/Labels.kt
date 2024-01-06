@@ -84,7 +84,7 @@ object Labels : Renderable {
         
         renderer.composite = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, mainAlpha)
         
-        renderer.color = Color.WHITE
+        renderer.color = fgLight
         renderer.font = font
         
         val fm = renderer.getFontMetrics(font)
@@ -117,7 +117,7 @@ object Labels : Renderable {
                 BORDER * 2 + i * ELEMENT_SIZE + ELEMENT_SIZE / 2 + 7)
         }
         
-        renderer.color = Color(255, 255, 255, (groupAlpha * 255).toInt())
+        renderer.color = Color(fgLight.red, fgLight.green, fgLight.blue, (groupAlpha * 255).toInt())
         
         when (mode) {
             Mode.Numbers  -> {

@@ -8,6 +8,7 @@ import kakkoiichris.hypergame.util.Time
 import kakkoiichris.hypergame.util.data.json.JSONMember
 import kakkoiichris.hypergame.util.math.Box
 import kakkoiichris.hypergame.util.math.Vector
+import kakkoiichris.hypergame.util.math.tween
 import kakkoiichris.hypergame.view.View
 import java.awt.BasicStroke
 import java.awt.Color
@@ -15,89 +16,83 @@ import java.awt.Font
 
 class Element(
     @JSONMember("name")
-    val name: String?,
+    val name: String? = null,
 
     @JSONMember("appearance")
-    val appearance: String?,
+    val appearance: String? = null,
 
     @JSONMember("atomic_mass")
-    val atomicMass: Double?,
+    val atomicMass: Double? = null,
 
     @JSONMember("boil")
-    val boil: Double?,
+    val boil: Double? = null,
 
     @JSONMember("category")
-    val category: String?,
+    val category: String? = null,
 
     @JSONMember("density")
-    val density: Double?,
+    val density: Double? = null,
 
     @JSONMember("discovered_by")
-    val discoveredBy: String?,
+    val discoveredBy: String? = null,
 
     @JSONMember("melt")
-    val melt: Double?,
+    val melt: Double? = null,
 
     @JSONMember("molar_heat")
-    val molarHeat: Double?,
+    val molarHeat: Double? = null,
 
     @JSONMember("named_by")
-    val namedBy: String?,
+    val namedBy: String? = null,
 
     @JSONMember("number")
-    val number: Int?,
+    val number: Int? = null,
 
     @JSONMember("period")
-    val period: Double?,
+    val period: Double? = null,
 
     @JSONMember("phase")
-    val phase: String?,
+    val phase: String? = null,
 
     @JSONMember("source")
-    val source: String?,
+    val source: String? = null,
 
     @JSONMember("spectral_img")
-    val spectralImage: String?,
+    val spectralImage: String? = null,
 
     @JSONMember("summary")
-    val summary: String?,
+    val summary: String? = null,
 
     @JSONMember("symbol")
-    val symbol: String?,
+    val symbol: String? = null,
 
     @JSONMember("xpos")
-    val xPos: Double?,
+    val xPos: Double? = null,
 
     @JSONMember("ypos")
-    val yPos: Double?,
+    val yPos: Double? = null,
 
     @JSONMember("shells")
-    val shells: DoubleArray?,
+    val shells: DoubleArray? = null,
 
     @JSONMember("electron_configuration")
-    val electronConfiguration: String?,
+    val electronConfiguration: String? = null,
 
     @JSONMember("electron_affinity")
-    val electronAffinity: Double?,
+    val electronAffinity: Double? = null,
 
     @JSONMember("electronegativity_pauling")
-    val electronegativityPauling: Double?,
+    val electronegativityPauling: Double? = null,
 
     @JSONMember("ionization_energies")
-    val ionizationEnergies: DoubleArray?,
+    val ionizationEnergies: DoubleArray? = null,
 ) : Box(
     (DISPLAY_WIDTH - ELEMENT_SIZE) / 2.0,
     (DISPLAY_HEIGHT - ELEMENT_SIZE) / 2.0,
     ELEMENT_SIZE.toDouble() - 1,
     ELEMENT_SIZE.toDouble() - 1
 ), Renderable {
-    companion object {
-        private val numberFont = Font("Consolas", Font.PLAIN, 12)
-        private val symbolFont = Font("Chemical Reaction A BRK", Font.BOLD, 24)
-        private val massFont = Font("Consolas", Font.ITALIC, 10)
-    }
-
-    private var target = when (category) {
+    var target = when (category) {
         "lanthanide" -> Vector(
             3.0 * ELEMENT_SIZE,
             6.0 * ELEMENT_SIZE
@@ -115,6 +110,8 @@ class Element(
     }
 
     private var elementColor = Category[category ?: ""]
+
+    private var highlightScale = 1.0
 
     var expanding = false
     var highlighted = false
@@ -146,24 +143,42 @@ class Element(
 
                 expanding = false
             }
+
+            return
         }
+
+        highlighted = input.mouse in this
+
+        highlightScale = highlightScale.tween(if (highlighted) 1.2 else 1.0, 0.3, 0.001)
     }
 
     override fun render(view: View, renderer: Renderer) {
         with(renderer) {
-            color = elementColor.value
+            push()
 
-            fill(rectangle)
+            translate(center)
+            scale(highlightScale, highlightScale)
+            translate(-dimensions / 2.0)
 
-            color = Color.BLACK
+            color = elementColor.back
 
             if (highlighted) {
                 color = color.brighter()
             }
 
+            val localBounds = copy(x = 0.0, y = 0.0)
+
+            val (x, y, width, height) = localBounds
+
+            fillRect(localBounds)
+
+            color = fgDark
+
             stroke = BasicStroke(2F)
 
-            draw(rectangle)
+            drawRect(localBounds)
+
+            color = elementColor.fore
 
             font = numberFont
 
@@ -194,25 +209,38 @@ class Element(
             th = fm.descent + fm.leading + fm.ascent
 
             drawString(text, (x + ((width - tw) / 2)).toInt(), (y + height - fm.descent).toInt())
+
+            pop()
         }
     }
 
-    private interface ElementColor {
-        val value: Color
+    companion object {
+        private val numberFont = Font("Consolas", Font.PLAIN, 12)
+        private val symbolFont = Font("Chemical Reaction A BRK", Font.BOLD, 24)
+        private val massFont = Font("Consolas", Font.ITALIC, 10)
+
+        fun Placeholder(symbol: String) =
+            Element(symbol = symbol, category = "Placeholder")
     }
 
-    enum class Category(override val value: Color) : ElementColor {
-        AlkaliMetal(Color(0, 191, 255)),
-        AlkalineEarthMetal(Color(255, 127, 0)),
-        Lanthanide(Color(191, 127, 255)),
-        TransitionMetal(Color(0, 255, 0)),
-        PostTransitionMetal(Color(255, 127, 127)),
-        Actinide(Color(255, 0, 127)),
-        PolyatomicNonmetal(Color(255, 255, 63)),
-        DiatomicNonmetal(Color(255, 0, 0)),
-        NobleGas(Color(0, 255, 127)),
-        Metalloid(Color(127, 127, 255)),
-        Unknown(Color(191, 191, 191));
+    private interface ElementColor {
+        val fore: Color
+        val back: Color
+    }
+
+    enum class Category(override val fore: Color, override val back: Color) : ElementColor {
+        AlkaliMetal(fgDark, Color(100, 185, 186)),
+        AlkalineEarthMetal(fgDark, Color(204, 125, 49)),
+        Lanthanide(fgLight, Color(103, 78, 167)),
+        TransitionMetal(fgDark, Color(139, 143, 21)),
+        PostTransitionMetal(fgDark, Color(239, 211, 216)),
+        Actinide(fgDark, Color(218, 144, 169)),
+        PolyatomicNonmetal(fgDark, Color(228, 187, 1)),
+        DiatomicNonmetal(fgLight, Color(117, 17, 1)),
+        NobleGas(fgDark, Color(228, 230, 104)),
+        Metalloid(fgLight, Color(1, 110, 139)),
+        Unknown(fgDark, Color(182, 188, 170)),
+        Placeholder(fgLight, Color(0, 0, 0, 0));
 
         companion object {
             operator fun get(name: String): Category {
@@ -225,17 +253,17 @@ class Element(
         }
     }
 
-    enum class State(override val value: Color) : ElementColor {
-        Solid(Color(255, 63, 63)),
-        Liquid(Color(63, 255, 63)),
-        Gas(Color(63, 63, 255)),
-        Unknown(Color(127, 127, 127))
+    enum class State(override val fore: Color, override val back: Color) : ElementColor {
+        Solid(Color.BLACK, Color(255, 63, 63)),
+        Liquid(Color.BLACK, Color(63, 255, 63)),
+        Gas(Color.BLACK, Color(63, 63, 255)),
+        Unknown(Color.BLACK, Color(127, 127, 127))
     }
 
-    enum class Block(override val value: Color) : ElementColor {
-        S(Color(255, 0, 127)),
-        P(Color(255, 127, 0)),
-        D(Color(127, 255, 0)),
-        F(Color(0, 127, 255))
+    enum class Block(override val fore: Color, override val back: Color) : ElementColor {
+        S(Color.BLACK, Color(255, 0, 127)),
+        P(Color.BLACK, Color(255, 127, 0)),
+        D(Color.BLACK, Color(127, 255, 0)),
+        F(Color.BLACK, Color(0, 127, 255))
     }
 }

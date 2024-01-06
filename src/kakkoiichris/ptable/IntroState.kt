@@ -7,6 +7,7 @@ import kakkoiichris.hypergame.state.State
 import kakkoiichris.hypergame.state.StateManager
 import kakkoiichris.hypergame.util.Time
 import kakkoiichris.hypergame.view.View
+import java.awt.AlphaComposite
 import java.awt.Color
 import java.awt.Font
 
@@ -121,7 +122,7 @@ object IntroState : State {
 
     override fun render(view: View, renderer: Renderer) {
         with(renderer) {
-            color = Color.BLACK
+            color = bgColor
 
             fillRect(0, 0, view.width, view.height)
 
@@ -130,26 +131,24 @@ object IntroState : State {
             translate(view.width / 2, view.height / 2)
             rotate(atomTheta)
 
+            composite = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, atomAlpha.toFloat())
+
             drawImage(atom, -atom.width / 2, -atom.height / 2)
 
             pop()
 
             when (SubState.current) {
-                SubState.FadeInAtom, SubState.FadeOutAtom                  -> {
-                    color = Color(0, 0, 0, 255 - (atomAlpha * 255).toInt())
-
-                    fillRect(0, 0, view.width, view.height)
-                }
-
                 SubState.FadeInTitle, SubState.Idle, SubState.FadeOutTitle -> {
                     font = titleFont
 
                     val titleWidth = fontMetrics.stringWidth(TITLE)
 
-                    color = Color(0, 0, 0, (titleAlpha * 255).toInt())
+                    color = Color(fgDark.red, fgDark.green, fgDark.blue, (titleAlpha * 255).toInt())
 
                     drawString(TITLE, (view.width - titleWidth) / 2, (view.height - fontMetrics.height) / 2)
                 }
+
+                else                                                       -> Unit
             }
         }
     }
