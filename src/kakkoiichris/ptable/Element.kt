@@ -48,7 +48,7 @@ class Element(
     val number: Int?,
 
     @JSONMember("period")
-    val period: Int?,
+    val period: Double?,
 
     @JSONMember("phase")
     val phase: String?,
@@ -66,13 +66,13 @@ class Element(
     val symbol: String?,
 
     @JSONMember("xpos")
-    val xPos: Int?,
+    val xPos: Double?,
 
     @JSONMember("ypos")
-    val yPos: Int?,
+    val yPos: Double?,
 
     @JSONMember("shells")
-    val shells: IntArray?,
+    val shells: DoubleArray?,
 
     @JSONMember("electron_configuration")
     val electronConfiguration: String?,
@@ -97,7 +97,22 @@ class Element(
         private val massFont = Font("Consolas", Font.ITALIC, 10)
     }
 
-    private var target: Vector
+    private var target = when (category) {
+        "lanthanide" -> Vector(
+            3.0 * ELEMENT_SIZE,
+            6.0 * ELEMENT_SIZE
+        )
+
+        "actinide"   -> Vector(
+            3.0 * ELEMENT_SIZE,
+            7.0 * ELEMENT_SIZE
+        )
+
+        else         -> Vector(
+            (xPos ?: -1.0) * ELEMENT_SIZE,
+            (yPos ?: -1.0) * ELEMENT_SIZE
+        )
+    }
 
     private var elementColor = Category[category ?: ""]
 
@@ -106,28 +121,9 @@ class Element(
 
     private val isLaOrAc get() = category in arrayOf("lanthanide", "actinide")
 
-    init {
-        target = when (category) {
-            "lanthanide" -> Vector(
-                3.0 * ELEMENT_SIZE,
-                6.0 * ELEMENT_SIZE
-            )
-
-            "actinide"   -> Vector(
-                3.0 * ELEMENT_SIZE,
-                7.0 * ELEMENT_SIZE
-            )
-
-            else         -> Vector(
-                (xPos?.toDouble() ?: -1.0) * ELEMENT_SIZE,
-                (yPos?.toDouble() ?: -1.0) * ELEMENT_SIZE
-            )
-        }
-    }
-
     fun slideDown() {
         if (isLaOrAc) {
-            target.y = (yPos?.toDouble() ?: -1.0) * ELEMENT_SIZE
+            target.y = (yPos ?: -1.0) * ELEMENT_SIZE
 
             expanding = true
         }
@@ -135,7 +131,7 @@ class Element(
 
     fun slideOut() {
         if (isLaOrAc) {
-            target.x = (xPos?.toDouble() ?: -1.0) * ELEMENT_SIZE
+            target.x = (xPos ?: -1.0) * ELEMENT_SIZE
 
             expanding = true
         }
@@ -216,7 +212,7 @@ class Element(
         DiatomicNonmetal(Color(255, 0, 0)),
         NobleGas(Color(0, 255, 127)),
         Metalloid(Color(127, 127, 255)),
-        Unknown(Color(255, 255, 255));
+        Unknown(Color(191, 191, 191));
 
         companion object {
             operator fun get(name: String): Category {
@@ -224,7 +220,7 @@ class Element(
                     .split("(\\s+|-)".toRegex())
                     .joinToString(separator = "") { it.capitalized() }
 
-                return values().firstOrNull { it.name == entryName } ?: Unknown
+                return entries.firstOrNull { it.name == entryName } ?: Unknown
             }
         }
     }

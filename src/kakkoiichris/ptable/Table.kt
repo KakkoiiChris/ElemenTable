@@ -6,6 +6,7 @@ import kakkoiichris.hypergame.media.Renderer
 import kakkoiichris.hypergame.state.StateManager
 import kakkoiichris.hypergame.util.Time
 import kakkoiichris.hypergame.view.View
+import java.awt.BasicStroke
 import java.awt.Color
 
 object Table : Renderable {
@@ -18,10 +19,10 @@ object Table : Renderable {
     fun init() {
         val data = resources.getFolder("json").getJSON("elements")
 
-        val elementsData = data["elements"]?.asObjectArray() ?: error("Elements not found!")
+        val elementsData = data["elements"]?.asObjectArrayOrNull() ?: error("Elements not found!")
 
         elements = elementsData.reversed().map {
-            it?.create(Element::class) ?: error("Couldn't create element!")
+            it.create(Element::class) ?: error("Couldn't create element!")
         }
 
         val metalloidLineElementList = mutableListOf<Element>()
@@ -58,6 +59,7 @@ object Table : Renderable {
         }
         
         renderer.color = Color.WHITE
+        renderer.stroke = BasicStroke(5F)
         
         for (i in 0 until metalloidLineElements.size - 1) {
             val a = metalloidLineElements[i]

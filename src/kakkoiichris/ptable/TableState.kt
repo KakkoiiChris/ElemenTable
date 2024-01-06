@@ -48,13 +48,9 @@ object TableState : State {
     private var fadeAlpha = 1.0
     
     private lateinit var screenshot: BufferedImage
-    
-    override val name get() = STATE_TABLE
 
-    override fun swapTo(view: View, passed: List<Any>) {
-        val (ss) = passed
-
-        screenshot = ss as BufferedImage
+    override fun swapTo(view: View) {
+        screenshot = view.getScreenshot()
     }
 
     override fun swapFrom(view: View) {
@@ -63,8 +59,6 @@ object TableState : State {
     override fun update(view: View, manager: StateManager, time: Time, input: Input) {
         when (SubState.current) {
             SubState.FadeIn    -> {
-                println(time.delta)
-                
                 fadeAlpha -= time.delta * FADE_ALPHA_DELTA
                 
                 if (fadeAlpha <= 0.0) {

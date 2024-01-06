@@ -12,9 +12,7 @@ import java.awt.Color
 object UITestState : State {
     private val main = Panel()
     
-    override val name = "ui"
-    
-    override fun swapTo(view: View, passed: List<Any>) {
+    override fun swapTo(view: View) {
         main.setBounds(0.0, 0.0, view.width.toDouble(), view.height.toDouble())
         main.layout = Layout.Fixed
         main.padding = 20U

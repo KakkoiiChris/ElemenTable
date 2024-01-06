@@ -14,9 +14,6 @@ const val DISPLAY_HEIGHT = (ELEMENT_SIZE * ROWS) + (BORDER * 5)
 const val TITLE = "pTable"
 const val VERSION = "BETA 3.8"
 
-const val STATE_INTRO = "intro"
-const val STATE_TABLE = "table"
-
 val resources = ResourceManager("/resources")
 
 fun main() {
@@ -26,9 +23,7 @@ fun main() {
 
     val display = Display(DISPLAY_WIDTH, DISPLAY_HEIGHT, title = TITLE, icon = icon)
 
-    display.manager += IntroState
-    display.manager += TableState
-    display.manager += UITestState
+    display.manager.goto(IntroState)
 
     display.open()
 }

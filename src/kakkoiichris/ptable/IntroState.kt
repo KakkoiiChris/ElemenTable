@@ -59,9 +59,7 @@ object IntroState : State {
     private const val IDLE_TIME = 3.0
     private var idleTimer = 0.0
 
-    override val name get() = STATE_INTRO
-
-    override fun swapTo(view: View, passed: List<Any>) {
+    override fun swapTo(view: View) {
     }
 
     override fun swapFrom(view: View) {
@@ -115,7 +113,7 @@ object IntroState : State {
                 if (atomAlpha <= 0.0) {
                     atomAlpha = 0.0
 
-                    manager.goto(STATE_TABLE, view.getScreenshot())
+                    manager.goto(TableState)
                 }
             }
         }
@@ -127,32 +125,23 @@ object IntroState : State {
 
             fillRect(0, 0, view.width, view.height)
 
+            push()
+
+            translate(view.width / 2, view.height / 2)
+            rotate(atomTheta)
+
+            drawImage(atom, -atom.width / 2, -atom.height / 2)
+
+            pop()
+
             when (SubState.current) {
                 SubState.FadeInAtom, SubState.FadeOutAtom                  -> {
-                    push()
-
-                    translate(view.width / 2, view.height / 2)
-                    rotate(atomTheta)
-
-                    drawImage(atom, -atom.width / 2, -atom.height / 2)
-
-                    pop()
-
                     color = Color(0, 0, 0, 255 - (atomAlpha * 255).toInt())
 
                     fillRect(0, 0, view.width, view.height)
                 }
 
                 SubState.FadeInTitle, SubState.Idle, SubState.FadeOutTitle -> {
-                    push()
-
-                    translate(view.width / 2, view.height / 2)
-                    rotate(atomTheta)
-
-                    drawImage(atom, -atom.width / 2, -atom.height / 2)
-
-                    pop()
-
                     font = titleFont
 
                     val titleWidth = fontMetrics.stringWidth(TITLE)

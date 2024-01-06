@@ -34,7 +34,7 @@ object Labels : Renderable {
         "VIIIA"
     )
     
-    private const val alphaDelta = 0.05F
+    private const val DELTA_ALPHA = 0.05F
     
     private val font = Font("Monospaced", Font.BOLD, BORDER - 13)
     
@@ -49,7 +49,7 @@ object Labels : Renderable {
     override fun update(view: View, manager: StateManager, time: Time, input: Input) {
         if (visible) {
             if (mainAlpha < 1F) {
-                mainAlpha += (alphaDelta * time.delta).toFloat()
+                mainAlpha += (DELTA_ALPHA * time.delta).toFloat()
                 
                 if (mainAlpha >= 1F) {
                     mainAlpha = 1F
@@ -58,7 +58,7 @@ object Labels : Renderable {
             
             if (nextMode != null) {
                 if (groupAlpha >= 0) {
-                    groupAlpha -= alphaDelta
+                    groupAlpha -= DELTA_ALPHA
                     
                     if (groupAlpha < 0F) {
                         groupAlpha = 0F
@@ -69,7 +69,7 @@ object Labels : Renderable {
             }
             else {
                 if (groupAlpha < 255) {
-                    groupAlpha += alphaDelta
+                    groupAlpha += DELTA_ALPHA
                     
                     if (groupAlpha >= 1F) {
                         groupAlpha = 1F
