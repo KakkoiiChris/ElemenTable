@@ -1,5 +1,6 @@
 package kakkoiichris.ptable
 
+import kakkoiichris.hypergame.input.Button
 import kakkoiichris.hypergame.input.Input
 import kakkoiichris.hypergame.input.Key
 import kakkoiichris.hypergame.media.Renderer
@@ -7,42 +8,26 @@ import kakkoiichris.hypergame.state.State
 import kakkoiichris.hypergame.state.StateManager
 import kakkoiichris.hypergame.util.Time
 import kakkoiichris.hypergame.view.View
+import java.awt.AlphaComposite
 
-object TableState : State {
+object MainState : State {
     private enum class SubState {
-        FadeIn {
-            override val next get() = Expanding
-        },
-
-        Expanding {
-            override val next get() = SlideDown
-        },
-
-        SlideDown {
-            override val next get() = SlideOut
-        },
-
-        SlideOut {
-            override val next get() = Main
-        },
-
-        Main {
-            override val next get() = Main
-        };
-
-        companion object {
-            var current = FadeIn
-
-            fun next() {
-                current = current.next
-            }
-        }
-
-        abstract val next: SubState
+        FadeIn,
+        Expand,
+        SlideDown,
+        SlideOut,
+        Table,
+        ZoomIn,
+        ZoomOut,
+        Element
     }
 
     private const val FADE_ALPHA_DELTA = 0.01
-    private var fadeAlpha = 1.0
+    private var fadeAlpha = 0.0
+
+    private var state = SubState.FadeIn
+
+    private var selected: Element? = null
 
     override fun swapTo(view: View) {
     }
@@ -51,26 +36,26 @@ object TableState : State {
     }
 
     override fun update(view: View, manager: StateManager, time: Time, input: Input) {
-        when (SubState.current) {
+        when (state) {
             SubState.FadeIn    -> {
-                fadeAlpha -= time.delta * FADE_ALPHA_DELTA
+                fadeAlpha += time.delta * FADE_ALPHA_DELTA
 
-                if (fadeAlpha <= 0.0) {
-                    fadeAlpha = 0.0
+                if (fadeAlpha >= 1.0) {
+                    fadeAlpha = 1.0
 
                     Table.expand()
 
-                    SubState.next()
+                    state = SubState.Expand
                 }
             }
 
-            SubState.Expanding -> {
+            SubState.Expand    -> {
                 Table.update(view, manager, time, input)
 
                 if (!Table.expanding) {
                     Table.slideDown()
 
-                    SubState.next()
+                    state = SubState.SlideDown
                 }
             }
 
@@ -80,7 +65,7 @@ object TableState : State {
                 if (!Table.expanding) {
                     Table.slideOut()
 
-                    SubState.next()
+                    state = SubState.SlideOut
                 }
             }
 
@@ -88,11 +73,11 @@ object TableState : State {
                 Table.update(view, manager, time, input)
 
                 if (!Table.expanding) {
-                    SubState.next()
+                    state = SubState.Table
                 }
             }
 
-            SubState.Main      -> {
+            SubState.Table     -> {
                 if (input.keyDown(Key.SPACE)) {
                     Labels.nextMode = Labels.Mode.Numerals
                 }
@@ -100,7 +85,23 @@ object TableState : State {
                 Table.update(view, manager, time, input)
 
                 Labels.update(view, manager, time, input)
+
+                if (input.buttonDown(Button.LEFT)) {
+                    selected?.hidden = false
+
+                    selected = Table.selectElement(input.mouse)
+
+                    selected?.hidden = true
+                }
             }
+
+            SubState.ZoomIn    -> {
+
+            }
+
+            SubState.ZoomOut   -> {}
+
+            SubState.Element   -> {}
         }
     }
 
@@ -110,12 +111,22 @@ object TableState : State {
 
             fillRect(0, 0, view.width, view.height)
 
+            if (state == SubState.FadeIn) {
+                push()
+
+                composite = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, fadeAlpha.toFloat())
+            }
+
             Table.render(view, renderer)
 
-            when (SubState.current) {
-                SubState.Main -> Labels.render(view, renderer)
+            if (state == SubState.FadeIn) {
+                pop()
+            }
 
-                else          -> Unit
+            when (state) {
+                SubState.Table -> Labels.render(view, renderer)
+
+                else           -> Unit
             }
         }
     }

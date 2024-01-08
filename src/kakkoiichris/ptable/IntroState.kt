@@ -1,5 +1,6 @@
 package kakkoiichris.ptable
 
+import kakkoiichris.hypergame.input.Button
 import kakkoiichris.hypergame.input.Input
 import kakkoiichris.hypergame.media.Renderer
 import kakkoiichris.hypergame.media.Sprite
@@ -69,6 +70,10 @@ object IntroState : State {
     override fun update(view: View, manager: StateManager, time: Time, input: Input) {
         atomTheta += ATOM_THETA_DELTA
 
+        if (input.buttonDown(Button.LEFT)) {
+            manager.goto(MainState)
+        }
+
         when (SubState.current) {
             SubState.FadeInAtom   -> {
                 atomAlpha += time.delta * ATOM_ALPHA_DELTA
@@ -114,7 +119,7 @@ object IntroState : State {
                 if (atomAlpha <= 0.0) {
                     atomAlpha = 0.0
 
-                    manager.goto(TableState)
+                    manager.goto(MainState)
                 }
             }
         }

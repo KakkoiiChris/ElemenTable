@@ -60,6 +60,9 @@ object Table : Renderable {
         elements.forEach { it.slideOut() }
     }
 
+    fun selectElement(mouse: Vector) =
+        elements.firstOrNull { it.category != "Placeholder" && mouse in it }
+
     override fun update(view: View, manager: StateManager, time: Time, input: Input) {
         for (element in elements) {
             element.update(view, manager, time, input)

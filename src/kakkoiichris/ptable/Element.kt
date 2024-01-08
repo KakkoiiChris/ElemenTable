@@ -115,6 +115,7 @@ class Element(
 
     var expanding = false
     var highlighted = false
+    var hidden = false
 
     private val isLaOrAc get() = category in arrayOf("lanthanide", "actinide")
 
@@ -153,30 +154,22 @@ class Element(
     }
 
     override fun render(view: View, renderer: Renderer) {
+        if (hidden) return
+
         with(renderer) {
-            push()
-
-            translate(center)
-            scale(highlightScale, highlightScale)
-            translate(-dimensions / 2.0)
-
             color = elementColor.back
 
             if (highlighted) {
                 color = color.brighter()
             }
 
-            val localBounds = copy(x = 0.0, y = 0.0)
-
-            val (x, y, width, height) = localBounds
-
-            fillRect(localBounds)
+            fillRect(this@Element)
 
             color = fgDark
 
             stroke = BasicStroke(2F)
 
-            drawRect(localBounds)
+            drawRect(this@Element)
 
             color = elementColor.fore
 
@@ -209,15 +202,13 @@ class Element(
             th = fm.descent + fm.leading + fm.ascent
 
             drawString(text, (x + ((width - tw) / 2)).toInt(), (y + height - fm.descent).toInt())
-
-            pop()
         }
     }
 
     companion object {
-        private val numberFont = Font("Consolas", Font.PLAIN, 12)
-        private val symbolFont = Font("Chemical Reaction A BRK", Font.BOLD, 24)
-        private val massFont = Font("Consolas", Font.ITALIC, 10)
+        private val numberFont = Font("Consolas", Font.PLAIN, 15)
+        private val symbolFont = Font("Chemical Reaction A BRK", Font.BOLD, 25)
+        private val massFont = Font("Consolas", Font.ITALIC, 15)
 
         fun Placeholder(symbol: String) =
             Element(symbol = symbol, category = "Placeholder")
