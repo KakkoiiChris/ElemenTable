@@ -9,6 +9,7 @@ import kakkoiichris.hypergame.state.StateManager
 import kakkoiichris.hypergame.util.Time
 import kakkoiichris.hypergame.view.View
 import java.awt.AlphaComposite
+import java.awt.image.BufferedImage
 
 object MainState : State {
     private enum class SubState {
@@ -23,13 +24,16 @@ object MainState : State {
     }
 
     private const val FADE_ALPHA_DELTA = 0.01
-    private var fadeAlpha = 0.0
+    private var fadeAlpha = 1.0
 
     private var state = SubState.FadeIn
+
+    private lateinit var screenShot: BufferedImage
 
     private var selected: Element? = null
 
     override fun swapTo(view: View) {
+        screenShot = view.getScreenshot()
     }
 
     override fun swapFrom(view: View) {
@@ -38,10 +42,10 @@ object MainState : State {
     override fun update(view: View, manager: StateManager, time: Time, input: Input) {
         when (state) {
             SubState.FadeIn    -> {
-                fadeAlpha += time.delta * FADE_ALPHA_DELTA
+                fadeAlpha -= time.delta * FADE_ALPHA_DELTA
 
-                if (fadeAlpha >= 1.0) {
-                    fadeAlpha = 1.0
+                if (fadeAlpha <= 0.0) {
+                    fadeAlpha = 0.0
 
                     Table.expand()
 
@@ -111,22 +115,22 @@ object MainState : State {
 
             fillRect(0, 0, view.width, view.height)
 
-            if (state == SubState.FadeIn) {
-                push()
-
-                composite = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, fadeAlpha.toFloat())
-            }
-
             Table.render(view, renderer)
 
-            if (state == SubState.FadeIn) {
-                pop()
-            }
-
             when (state) {
-                SubState.Table -> Labels.render(view, renderer)
+                SubState.FadeIn -> {
+                    push()
 
-                else           -> Unit
+                    composite = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, fadeAlpha.toFloat())
+
+                    drawImage(screenShot, 0, 0)
+
+                    pop()
+                }
+
+                SubState.Table  -> Labels.render(view, renderer)
+
+                else            -> Unit
             }
         }
     }

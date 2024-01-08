@@ -11,6 +11,7 @@ import kakkoiichris.hypergame.view.View
 import java.awt.AlphaComposite
 import java.awt.Color
 import java.awt.Font
+import java.awt.RenderingHints
 
 object IntroState : State {
     private enum class SubState {
@@ -27,11 +28,7 @@ object IntroState : State {
         },
 
         FadeOutTitle {
-            override val next get() = FadeOutAtom
-        },
-
-        FadeOutAtom {
-            override val next get() = FadeOutAtom
+            override val next get() = FadeOutTitle
         };
 
         companion object {
@@ -46,7 +43,7 @@ object IntroState : State {
     }
 
     private val atom = Sprite.load("/resources/img/icon.png")
-    private val titleFont = Font("Chemical Reaction A BRK", Font.BOLD, 100)
+    private val titleFont = Font("Boogie Boys", Font.BOLD, 150)
     private val versionFont = Font("Chemical Reaction B BRK", Font.PLAIN, 50)
 
     private const val ATOM_THETA_DELTA = 0.01
@@ -62,6 +59,12 @@ object IntroState : State {
     private var idleTimer = 0.0
 
     override fun swapTo(view: View) {
+        view.renderer.addRenderingHints(
+            mapOf(
+                RenderingHints.KEY_ANTIALIASING to RenderingHints.VALUE_ANTIALIAS_ON,
+                RenderingHints.KEY_TEXT_ANTIALIASING to RenderingHints.VALUE_TEXT_ANTIALIAS_LCD_HRGB,
+            )
+        )
     }
 
     override fun swapFrom(view: View) {
@@ -109,16 +112,6 @@ object IntroState : State {
                 if (titleAlpha <= 0.0) {
                     titleAlpha = 0.0
 
-                    SubState.next()
-                }
-            }
-
-            SubState.FadeOutAtom  -> {
-                atomAlpha -= time.delta * ATOM_ALPHA_DELTA
-
-                if (atomAlpha <= 0.0) {
-                    atomAlpha = 0.0
-
                     manager.goto(MainState)
                 }
             }
@@ -138,7 +131,7 @@ object IntroState : State {
 
             composite = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, atomAlpha.toFloat())
 
-            drawImage(atom, -atom.width / 2, -atom.height / 2)
+            drawImage(atom, -view.height / 2, -view.height / 2, view.height, view.height)
 
             pop()
 

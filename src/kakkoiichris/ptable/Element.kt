@@ -189,7 +189,7 @@ class Element(
 
             text = symbol ?: "???"
             tw = fm.stringWidth(text)
-            th = fm.descent + fm.leading + fm.ascent
+            th = fm.leading + fm.ascent
 
             drawString(text, (x + ((width - tw) / 2)).toInt(), (y + (height / 2) + (th / 2)).toInt())
 
@@ -199,16 +199,16 @@ class Element(
 
             text = String.format("%.3f", atomicMass)
             tw = fm.stringWidth(text)
-            th = fm.descent + fm.leading + fm.ascent
+            th = fm.leading + fm.ascent
 
             drawString(text, (x + ((width - tw) / 2)).toInt(), (y + height - fm.descent).toInt())
         }
     }
 
     companion object {
-        private val numberFont = Font("Consolas", Font.PLAIN, 15)
-        private val symbolFont = Font("Chemical Reaction A BRK", Font.BOLD, 25)
-        private val massFont = Font("Consolas", Font.ITALIC, 15)
+        private val numberFont = Font("Courier New", Font.PLAIN, 16)
+        private val symbolFont = Font("Courier New", Font.BOLD, 25)
+        private val massFont = Font("Courier New", Font.ITALIC, 12)
 
         fun Placeholder(symbol: String) =
             Element(symbol = symbol, category = "Placeholder")

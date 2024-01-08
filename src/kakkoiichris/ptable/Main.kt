@@ -11,7 +11,7 @@ const val COLUMNS = 18
 const val ROWS = 10
 const val DISPLAY_WIDTH = (ELEMENT_SIZE * COLUMNS) + (BORDER * 3)
 const val DISPLAY_HEIGHT = (ELEMENT_SIZE * ROWS) + (BORDER * 5)
-const val TITLE = "pTable"
+const val TITLE = "ElemenTable"
 const val VERSION = "BETA 3.8"
 
 val fgLight = Color(234, 230, 216)
