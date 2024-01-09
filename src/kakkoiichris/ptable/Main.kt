@@ -18,9 +18,11 @@ val fgLight = Color(234, 230, 216)
 val fgDark = Color(48, 43, 43)
 val bgColor = Color(61, 60, 57)
 
-val resources = ResourceManager("/resources")
+
 
 fun main() {
+    Resources
+
     Table.init()
 
     val icon = ImageIO.read(Table::class.java.getResource("/resources/img/icon.png"))

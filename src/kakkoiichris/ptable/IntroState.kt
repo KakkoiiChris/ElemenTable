@@ -28,9 +28,9 @@ object IntroState : State {
 
     private var state = SubState.FadeInAtom
 
-    private val atom = Sprite.load("/resources/img/icon.png")
+    private val atom = Resources.icon
 
-    private val titleFont = Font("Boogie Boys", Font.BOLD, 150)
+    private val titleFont = Font(Resources.boogie, Font.BOLD, 150)
     private val versionFont = Font("Courier New", Font.BOLD, 75)
 
     private var atomTheta = 0.0

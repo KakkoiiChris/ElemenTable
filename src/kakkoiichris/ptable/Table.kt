@@ -18,9 +18,7 @@ object Table : Renderable {
     val expanding get() = cells.any(TableCell::expanding)
 
     fun init() {
-        val data = resources.getFolder("json").getJSON("elements")
-
-        val elementsData = data["elements"]
+        val elementsData = Resources.elements["elements"]
             ?.asObjectArrayOrNull()
             ?: error("Elements not found!")
 

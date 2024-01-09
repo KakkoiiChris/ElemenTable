@@ -4,7 +4,6 @@ import kakkoiichris.hypergame.input.Button
 import kakkoiichris.hypergame.input.Input
 import kakkoiichris.hypergame.input.Key
 import kakkoiichris.hypergame.media.Renderer
-import kakkoiichris.hypergame.media.Sprite
 import kakkoiichris.hypergame.state.State
 import kakkoiichris.hypergame.state.StateManager
 import kakkoiichris.hypergame.util.Time
@@ -34,7 +33,7 @@ object MainState : State {
 
     private lateinit var screenShot: BufferedImage
 
-    private val atom = Sprite.load("/resources/img/icon.png")
+    private val atom = Resources.icon
 
     private var selected: Element? = null
 
