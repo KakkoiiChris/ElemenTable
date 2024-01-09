@@ -4,6 +4,7 @@ import kakkoiichris.hypergame.input.Button
 import kakkoiichris.hypergame.input.Input
 import kakkoiichris.hypergame.media.Renderer
 import kakkoiichris.hypergame.media.Sprite
+import kakkoiichris.hypergame.media.withAlpha
 import kakkoiichris.hypergame.state.State
 import kakkoiichris.hypergame.state.StateManager
 import kakkoiichris.hypergame.util.Time
@@ -14,48 +15,29 @@ import java.awt.Font
 import java.awt.RenderingHints
 
 object IntroState : State {
+    private const val ATOM_THETA_DELTA = 0.01
+    private const val ALPHA_DELTA = 0.025
+    private const val IDLE_TIME = 3.0
+
     private enum class SubState {
-        FadeInAtom {
-            override val next get() = FadeInTitle
-        },
-
-        FadeInTitle {
-            override val next get() = Idle
-        },
-
-        Idle {
-            override val next get() = FadeOutTitle
-        },
-
-        FadeOutTitle {
-            override val next get() = FadeOutTitle
-        };
-
-        companion object {
-            var current = FadeInAtom
-
-            fun next() {
-                current = current.next
-            }
-        }
-
-        abstract val next: SubState
+        FadeInAtom,
+        FadeInTitle,
+        FadeInVersion,
+        Pause,
+        FadeOut
     }
 
+    private var state = SubState.FadeInAtom
+
     private val atom = Sprite.load("/resources/img/icon.png")
+
     private val titleFont = Font("Boogie Boys", Font.BOLD, 150)
-    private val versionFont = Font("Chemical Reaction B BRK", Font.PLAIN, 50)
+    private val versionFont = Font("Courier New", Font.BOLD, 75)
 
-    private const val ATOM_THETA_DELTA = 0.01
     private var atomTheta = 0.0
-
-    private const val ATOM_ALPHA_DELTA = 0.01
     private var atomAlpha = 0.0
-
-    private const val TITLE_ALPHA_DELTA = 0.01
     private var titleAlpha = 0.0
-
-    private const val IDLE_TIME = 3.0
+    private var versionAlpha = 0.0
     private var idleTimer = 0.0
 
     override fun swapTo(view: View) {
@@ -71,46 +53,60 @@ object IntroState : State {
     }
 
     override fun update(view: View, manager: StateManager, time: Time, input: Input) {
-        atomTheta += ATOM_THETA_DELTA
-
         if (input.buttonDown(Button.LEFT)) {
             manager.goto(MainState)
+
+            return
         }
 
-        when (SubState.current) {
-            SubState.FadeInAtom   -> {
-                atomAlpha += time.delta * ATOM_ALPHA_DELTA
+        atomTheta += ATOM_THETA_DELTA * time.delta
+
+        when (state) {
+            SubState.FadeInAtom    -> {
+                atomAlpha += ALPHA_DELTA * time.delta
 
                 if (atomAlpha >= 1.0) {
                     atomAlpha = 1.0
 
-                    SubState.next()
+                    state = SubState.FadeInTitle
                 }
             }
 
-            SubState.FadeInTitle  -> {
-                titleAlpha += time.delta * TITLE_ALPHA_DELTA
+            SubState.FadeInTitle   -> {
+                titleAlpha += ALPHA_DELTA * time.delta
 
                 if (titleAlpha >= 1.0) {
                     titleAlpha = 1.0
 
-                    SubState.next()
+                    state = SubState.FadeInVersion
                 }
             }
 
-            SubState.Idle         -> {
+            SubState.FadeInVersion -> {
+                versionAlpha += ALPHA_DELTA * time.delta
+
+                if (versionAlpha >= 1.0) {
+                    versionAlpha = 1.0
+
+                    state = SubState.Pause
+                }
+            }
+
+            SubState.Pause         -> {
                 idleTimer += time.seconds
 
                 if (idleTimer >= IDLE_TIME) {
-                    SubState.next()
+                    state = SubState.FadeOut
                 }
             }
 
-            SubState.FadeOutTitle -> {
-                titleAlpha -= time.delta * TITLE_ALPHA_DELTA
+            SubState.FadeOut       -> {
+                titleAlpha -= ALPHA_DELTA * time.delta
+                versionAlpha -= ALPHA_DELTA * time.delta
 
-                if (titleAlpha <= 0.0) {
+                if (titleAlpha <= 0.0 || versionAlpha <= 0.0) {
                     titleAlpha = 0.0
+                    versionAlpha = 0.0
 
                     manager.goto(MainState)
                 }
@@ -125,7 +121,6 @@ object IntroState : State {
             fillRect(0, 0, view.width, view.height)
 
             push()
-
             translate(view.width / 2, view.height / 2)
             rotate(atomTheta)
 
@@ -135,18 +130,26 @@ object IntroState : State {
 
             pop()
 
-            when (SubState.current) {
-                SubState.FadeInTitle, SubState.Idle, SubState.FadeOutTitle -> {
+            when (state) {
+                SubState.FadeInTitle, SubState.FadeInVersion, SubState.Pause, SubState.FadeOut -> {
                     font = titleFont
 
                     val titleWidth = fontMetrics.stringWidth(TITLE)
 
-                    color = Color(fgDark.red, fgDark.green, fgDark.blue, (titleAlpha * 255).toInt())
+                    color = fgDark.withAlpha(titleAlpha)
 
                     drawString(TITLE, (view.width - titleWidth) / 2, (view.height - fontMetrics.height) / 2)
+
+                    font = versionFont
+
+                    val versionWidth = fontMetrics.stringWidth(VERSION)
+
+                    color = fgDark.withAlpha(versionAlpha)
+
+                    drawString(VERSION, (view.width - versionWidth) / 2, view.height / 2)
                 }
 
-                else                                                       -> Unit
+                else                                                   -> Unit
             }
         }
     }

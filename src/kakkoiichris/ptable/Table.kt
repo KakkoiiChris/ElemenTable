@@ -8,6 +8,7 @@ import kakkoiichris.hypergame.util.Time
 import kakkoiichris.hypergame.util.math.Vector
 import kakkoiichris.hypergame.view.View
 import java.awt.BasicStroke
+import java.awt.Color
 
 object Table : Renderable {
     private lateinit var elements: List<Element>
@@ -19,29 +20,33 @@ object Table : Renderable {
     fun init() {
         val data = resources.getFolder("json").getJSON("elements")
 
-        val elementsData = data["elements"]?.asObjectArrayOrNull() ?: error("Elements not found!")
+        val elementsData = data["elements"]
+            ?.asObjectArrayOrNull()
+            ?: error("Elements not found!")
 
-        elements = elementsData.reversed().map {
-            it.create(Element::class) ?: error("Couldn't create element!")
-        }.toMutableList().apply {
-            add(0, Element.Placeholder("La").apply {
-                target = Vector(
-                    3.0 * ELEMENT_SIZE,
-                    6.0 * ELEMENT_SIZE
-                )
-            })
+        elements = elementsData
+            .reversed()
+            .map { it.create(Element::class) ?: error("Couldn't create element!") }
+            .toMutableList()
+            .apply {
+                add(0, Element.Placeholder("La").apply {
+                    target = Vector(
+                        3.0 * ELEMENT_SIZE,
+                        6.0 * ELEMENT_SIZE
+                    )
+                })
 
-            add(0, Element.Placeholder("Ac").apply {
-                target = Vector(
-                    3.0 * ELEMENT_SIZE,
-                    7.0 * ELEMENT_SIZE
-                )
-            })
-        }.toList()
+                add(0, Element.Placeholder("Ac").apply {
+                    target = Vector(
+                        3.0 * ELEMENT_SIZE,
+                        7.0 * ELEMENT_SIZE
+                    )
+                })
+            }
 
         val metalloidLineElementList = mutableListOf<Element>()
 
-        for (number in arrayOf(5, 13, 14, 32, 33, 51, 52, 84, 85, 117)) {
+        for (number in arrayOf(13, 14, 32, 33, 51, 52, 84, 85, 117)) {
             metalloidLineElementList += elements.first { it.number == number }
         }
 
@@ -61,7 +66,7 @@ object Table : Renderable {
     }
 
     fun selectElement(mouse: Vector) =
-        elements.firstOrNull { it.category != "Placeholder" && mouse in it }
+        elements.firstOrNull { it.category != Element.Category.Placeholder && mouse in it }
 
     override fun update(view: View, manager: StateManager, time: Time, input: Input) {
         for (element in elements) {
@@ -74,7 +79,7 @@ object Table : Renderable {
             element.render(view, renderer)
         }
 
-        renderer.color = fgLight
+        renderer.color = Color.YELLOW
         renderer.stroke = BasicStroke(5F)
 
         for (i in 0 until metalloidLineElements.size - 1) {

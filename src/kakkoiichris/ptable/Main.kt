@@ -12,7 +12,7 @@ const val ROWS = 10
 const val DISPLAY_WIDTH = (ELEMENT_SIZE * COLUMNS) + (BORDER * 3)
 const val DISPLAY_HEIGHT = (ELEMENT_SIZE * ROWS) + (BORDER * 5)
 const val TITLE = "ElemenTable"
-const val VERSION = "BETA 3.8"
+const val VERSION = "Beta 3.8"
 
 val fgLight = Color(234, 230, 216)
 val fgDark = Color(48, 43, 43)

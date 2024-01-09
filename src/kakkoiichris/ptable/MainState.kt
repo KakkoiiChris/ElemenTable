@@ -4,6 +4,7 @@ import kakkoiichris.hypergame.input.Button
 import kakkoiichris.hypergame.input.Input
 import kakkoiichris.hypergame.input.Key
 import kakkoiichris.hypergame.media.Renderer
+import kakkoiichris.hypergame.media.Sprite
 import kakkoiichris.hypergame.state.State
 import kakkoiichris.hypergame.state.StateManager
 import kakkoiichris.hypergame.util.Time
@@ -12,6 +13,9 @@ import java.awt.AlphaComposite
 import java.awt.image.BufferedImage
 
 object MainState : State {
+    private const val FADE_ALPHA_DELTA = 0.025
+    private const val ATOM_THETA_DELTA = 0.01
+
     private enum class SubState {
         FadeIn,
         Expand,
@@ -23,12 +27,14 @@ object MainState : State {
         Element
     }
 
-    private const val FADE_ALPHA_DELTA = 0.01
     private var fadeAlpha = 1.0
+    private var atomTheta = 0.0
 
     private var state = SubState.FadeIn
 
     private lateinit var screenShot: BufferedImage
+
+    private val atom = Sprite.load("/resources/img/icon.png")
 
     private var selected: Element? = null
 
@@ -40,9 +46,11 @@ object MainState : State {
     }
 
     override fun update(view: View, manager: StateManager, time: Time, input: Input) {
+        atomTheta += ATOM_THETA_DELTA * time.delta
+
         when (state) {
             SubState.FadeIn    -> {
-                fadeAlpha -= time.delta * FADE_ALPHA_DELTA
+                fadeAlpha -= FADE_ALPHA_DELTA * time.delta
 
                 if (fadeAlpha <= 0.0) {
                     fadeAlpha = 0.0
@@ -83,7 +91,7 @@ object MainState : State {
 
             SubState.Table     -> {
                 if (input.keyDown(Key.SPACE)) {
-                    Labels.nextMode = Labels.Mode.Numerals
+                    Labels.toggleMode()
                 }
 
                 Table.update(view, manager, time, input)
@@ -114,6 +122,14 @@ object MainState : State {
             color = bgColor
 
             fillRect(0, 0, view.width, view.height)
+
+            push()
+            translate(ELEMENT_SIZE / 2, ELEMENT_SIZE / 2)
+            rotate(atomTheta)
+
+            drawImage(atom, -ELEMENT_SIZE / 2, -ELEMENT_SIZE / 2, ELEMENT_SIZE, ELEMENT_SIZE)
+
+            pop()
 
             Table.render(view, renderer)
 

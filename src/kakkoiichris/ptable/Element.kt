@@ -28,7 +28,7 @@ class Element(
     val boil: Double? = null,
 
     @JSONMember("category")
-    val category: String? = null,
+    category: String? = null,
 
     @JSONMember("density")
     val density: Double? = null,
@@ -92,32 +92,32 @@ class Element(
     ELEMENT_SIZE.toDouble() - 1,
     ELEMENT_SIZE.toDouble() - 1
 ), Renderable {
-    var target = when (category) {
-        "lanthanide" -> Vector(
+    val category = Category[category ?: ""]
+
+    var target = when (this.category) {
+        Category.Lanthanide -> Vector(
             3.0 * ELEMENT_SIZE,
             6.0 * ELEMENT_SIZE
         )
 
-        "actinide"   -> Vector(
+        Category.Actinide   -> Vector(
             3.0 * ELEMENT_SIZE,
             7.0 * ELEMENT_SIZE
         )
 
-        else         -> Vector(
+        else                -> Vector(
             (xPos ?: -1.0) * ELEMENT_SIZE,
             (yPos ?: -1.0) * ELEMENT_SIZE
         )
     }
 
-    private var elementColor = Category[category ?: ""]
-
-    private var highlightScale = 1.0
+    private var elementColor = this.category
 
     var expanding = false
     var highlighted = false
     var hidden = false
 
-    private val isLaOrAc get() = category in arrayOf("lanthanide", "actinide")
+    private val isLaOrAc get() = category == Category.Lanthanide || category == Category.Actinide
 
     fun slideDown() {
         if (isLaOrAc) {
@@ -149,8 +149,6 @@ class Element(
         }
 
         highlighted = input.mouse in this
-
-        highlightScale = highlightScale.tween(if (highlighted) 1.2 else 1.0, 0.3, 0.001)
     }
 
     override fun render(view: View, renderer: Renderer) {
