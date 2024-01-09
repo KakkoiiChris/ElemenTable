@@ -11,11 +11,11 @@ import java.awt.BasicStroke
 import java.awt.Color
 
 object Table : Renderable {
-    private lateinit var elements: List<Element>
+    private lateinit var cells: List<TableCell>
 
-    private lateinit var metalloidLineElements: List<Element>
+    private lateinit var metalloidLineElements: List<TableCell>
 
-    val expanding get() = elements.any(Element::expanding)
+    val expanding get() = cells.any(TableCell::expanding)
 
     fun init() {
         val data = resources.getFolder("json").getJSON("elements")
@@ -24,27 +24,35 @@ object Table : Renderable {
             ?.asObjectArrayOrNull()
             ?: error("Elements not found!")
 
-        elements = elementsData
+        val elements = elementsData
             .reversed()
             .map { it.create(Element::class) ?: error("Couldn't create element!") }
-            .toMutableList()
-            .apply {
-                add(0, Element.Placeholder("La").apply {
-                    target = Vector(
-                        3.0 * ELEMENT_SIZE,
-                        6.0 * ELEMENT_SIZE
-                    )
-                })
 
-                add(0, Element.Placeholder("Ac").apply {
-                    target = Vector(
-                        3.0 * ELEMENT_SIZE,
-                        7.0 * ELEMENT_SIZE
-                    )
-                })
-            }
+        val la = elements.first { it.symbol == "La" }
 
-        val metalloidLineElementList = mutableListOf<Element>()
+        val laPlaceholder = Placeholder.of(la).apply {
+            target = Vector(
+                3.0 * ELEMENT_SIZE,
+                6.0 * ELEMENT_SIZE
+            )
+        }
+
+        val ac = elements.first { it.symbol == "Ac" }
+
+        val acPlaceholder = Placeholder.of(ac).apply {
+            target = Vector(
+                3.0 * ELEMENT_SIZE,
+                7.0 * ELEMENT_SIZE
+            )
+        }
+
+        cells = listOf(
+            laPlaceholder,
+            acPlaceholder,
+            *elements.toTypedArray()
+        )
+
+        val metalloidLineElementList = mutableListOf<TableCell>()
 
         for (number in arrayOf(13, 14, 32, 33, 51, 52, 84, 85, 117)) {
             metalloidLineElementList += elements.first { it.number == number }
@@ -54,28 +62,30 @@ object Table : Renderable {
     }
 
     fun expand() {
-        elements.forEach { it.expanding = true }
+        cells.forEach { it.expanding = true }
     }
 
     fun slideDown() {
-        elements.forEach { it.slideDown() }
+        cells.forEach { it.slideDown() }
     }
 
     fun slideOut() {
-        elements.forEach { it.slideOut() }
+        cells.forEach { it.slideOut() }
     }
 
     fun selectElement(mouse: Vector) =
-        elements.firstOrNull { it.category != Element.Category.Placeholder && mouse in it }
+        cells
+            .filterIsInstance<Element>()
+            .firstOrNull { mouse in it }
 
     override fun update(view: View, manager: StateManager, time: Time, input: Input) {
-        for (element in elements) {
+        for (element in cells) {
             element.update(view, manager, time, input)
         }
     }
 
     override fun render(view: View, renderer: Renderer) {
-        for (element in elements) {
+        for (element in cells) {
             element.render(view, renderer)
         }
 

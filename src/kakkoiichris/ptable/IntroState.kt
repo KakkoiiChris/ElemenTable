@@ -10,7 +10,6 @@ import kakkoiichris.hypergame.state.StateManager
 import kakkoiichris.hypergame.util.Time
 import kakkoiichris.hypergame.view.View
 import java.awt.AlphaComposite
-import java.awt.Color
 import java.awt.Font
 import java.awt.RenderingHints
 
@@ -149,7 +148,7 @@ object IntroState : State {
                     drawString(VERSION, (view.width - versionWidth) / 2, view.height / 2)
                 }
 
-                else                                                   -> Unit
+                else                                                                           -> Unit
             }
         }
     }

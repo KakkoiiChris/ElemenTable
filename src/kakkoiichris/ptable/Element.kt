@@ -1,18 +1,12 @@
 package kakkoiichris.ptable
 
-import kakkoiichris.hypergame.input.Input
-import kakkoiichris.hypergame.media.Renderable
 import kakkoiichris.hypergame.media.Renderer
-import kakkoiichris.hypergame.state.StateManager
-import kakkoiichris.hypergame.util.Time
 import kakkoiichris.hypergame.util.data.json.JSONMember
-import kakkoiichris.hypergame.util.math.Box
 import kakkoiichris.hypergame.util.math.Vector
-import kakkoiichris.hypergame.util.math.tween
 import kakkoiichris.hypergame.view.View
+import kakkoiichris.ptable.ElementColor.Category.Actinide
+import kakkoiichris.ptable.ElementColor.Category.Lanthanide
 import java.awt.BasicStroke
-import java.awt.Color
-import java.awt.Font
 
 class Element(
     @JSONMember("name")
@@ -67,10 +61,10 @@ class Element(
     val symbol: String? = null,
 
     @JSONMember("xpos")
-    val xPos: Double? = null,
+    override val xPos: Double,
 
     @JSONMember("ypos")
-    val yPos: Double? = null,
+    override val yPos: Double,
 
     @JSONMember("shells")
     val shells: DoubleArray? = null,
@@ -86,69 +80,31 @@ class Element(
 
     @JSONMember("ionization_energies")
     val ionizationEnergies: DoubleArray? = null,
-) : Box(
-    (DISPLAY_WIDTH - ELEMENT_SIZE) / 2.0,
-    (DISPLAY_HEIGHT - ELEMENT_SIZE) / 2.0,
-    ELEMENT_SIZE.toDouble() - 1,
-    ELEMENT_SIZE.toDouble() - 1
-), Renderable {
-    val category = Category[category ?: ""]
-
-    var target = when (this.category) {
-        Category.Lanthanide -> Vector(
-            3.0 * ELEMENT_SIZE,
-            6.0 * ELEMENT_SIZE
-        )
-
-        Category.Actinide   -> Vector(
-            3.0 * ELEMENT_SIZE,
-            7.0 * ELEMENT_SIZE
-        )
-
-        else                -> Vector(
-            (xPos ?: -1.0) * ELEMENT_SIZE,
-            (yPos ?: -1.0) * ELEMENT_SIZE
-        )
-    }
+) : TableCell() {
+    val category = ElementColor.Category[category ?: ""]
 
     private var elementColor = this.category
 
-    var expanding = false
-    var highlighted = false
-    var hidden = false
+    override val isLaOrAc
+        get() = category == Lanthanide || category == Actinide
 
-    private val isLaOrAc get() = category == Category.Lanthanide || category == Category.Actinide
+    init {
+        target = when (this.category) {
+            Lanthanide -> Vector(
+                3.0 * ELEMENT_SIZE,
+                6.0 * ELEMENT_SIZE
+            )
 
-    fun slideDown() {
-        if (isLaOrAc) {
-            target.y = (yPos ?: -1.0) * ELEMENT_SIZE
+            Actinide   -> Vector(
+                3.0 * ELEMENT_SIZE,
+                7.0 * ELEMENT_SIZE
+            )
 
-            expanding = true
+            else       -> Vector(
+                xPos * ELEMENT_SIZE,
+                yPos * ELEMENT_SIZE
+            )
         }
-    }
-
-    fun slideOut() {
-        if (isLaOrAc) {
-            target.x = (xPos ?: -1.0) * ELEMENT_SIZE
-
-            expanding = true
-        }
-    }
-
-    override fun update(view: View, manager: StateManager, time: Time, input: Input) {
-        if (expanding) {
-            position += (target - position) * 0.1
-
-            if (position.distanceTo(target) <= 0.1) {
-                position = target
-
-                expanding = false
-            }
-
-            return
-        }
-
-        highlighted = input.mouse in this
     }
 
     override fun render(view: View, renderer: Renderer) {
@@ -197,62 +153,8 @@ class Element(
 
             text = String.format("%.3f", atomicMass)
             tw = fm.stringWidth(text)
-            th = fm.leading + fm.ascent
 
             drawString(text, (x + ((width - tw) / 2)).toInt(), (y + height - fm.descent).toInt())
         }
-    }
-
-    companion object {
-        private val numberFont = Font("Courier New", Font.PLAIN, 16)
-        private val symbolFont = Font("Courier New", Font.BOLD, 25)
-        private val massFont = Font("Courier New", Font.ITALIC, 12)
-
-        fun Placeholder(symbol: String) =
-            Element(symbol = symbol, category = "Placeholder")
-    }
-
-    private interface ElementColor {
-        val fore: Color
-        val back: Color
-    }
-
-    enum class Category(override val fore: Color, override val back: Color) : ElementColor {
-        AlkaliMetal(fgDark, Color(100, 185, 186)),
-        AlkalineEarthMetal(fgDark, Color(204, 125, 49)),
-        Lanthanide(fgLight, Color(103, 78, 167)),
-        TransitionMetal(fgDark, Color(139, 143, 21)),
-        PostTransitionMetal(fgDark, Color(239, 211, 216)),
-        Actinide(fgDark, Color(218, 144, 169)),
-        PolyatomicNonmetal(fgDark, Color(228, 187, 1)),
-        DiatomicNonmetal(fgLight, Color(117, 17, 1)),
-        NobleGas(fgDark, Color(228, 230, 104)),
-        Metalloid(fgLight, Color(1, 110, 139)),
-        Unknown(fgDark, Color(182, 188, 170)),
-        Placeholder(fgLight, Color(0, 0, 0, 0));
-
-        companion object {
-            operator fun get(name: String): Category {
-                val entryName = name
-                    .split("(\\s+|-)".toRegex())
-                    .joinToString(separator = "") { it.capitalized() }
-
-                return entries.firstOrNull { it.name == entryName } ?: Unknown
-            }
-        }
-    }
-
-    enum class State(override val fore: Color, override val back: Color) : ElementColor {
-        Solid(Color.BLACK, Color(255, 63, 63)),
-        Liquid(Color.BLACK, Color(63, 255, 63)),
-        Gas(Color.BLACK, Color(63, 63, 255)),
-        Unknown(Color.BLACK, Color(127, 127, 127))
-    }
-
-    enum class Block(override val fore: Color, override val back: Color) : ElementColor {
-        S(Color.BLACK, Color(255, 0, 127)),
-        P(Color.BLACK, Color(255, 127, 0)),
-        D(Color.BLACK, Color(127, 255, 0)),
-        F(Color.BLACK, Color(0, 127, 255))
     }
 }
